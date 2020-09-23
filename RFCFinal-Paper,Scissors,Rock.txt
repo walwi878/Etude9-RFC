@@ -1,0 +1,358 @@
+Network Working Group                                         B. Bosecke
+Request For Comments: nnnn                                    J. Fawcett
+Category: Informational                                      M. Morrison
+                                                              W. Wallace
+                                                     University of Otago
+                                                                May 2020
+
+
+                          Rock Paper Scissors
+
+Status of this Memo
+
+   This memo provides information for the two-player game, rock paper
+   scissors.  Distribution of this memo is unlimited.
+
+Copyright Notice
+
+   Copyright (c) 2020 Otago University and the persons identified as the
+   document authors.  All rights reserved.
+
+Abstract
+
+   This memo provides information outlining implementation of the 
+   two-player game hereby referred to as "Rock Paper Scissors".  It
+   summarises the rules of the game, the implementation of the game, 
+   encryption, timestamping and security.
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+Morrison, et al.             Informational                      [Page 1]
+
+RFC nnnn                  Rock Paper Scissors                   May 2020
+
+
+1. Introduction
+
+   This memo provides information for the rules of the two-player game, 
+   "Rock, Paper, Scissors".  It summarizes how to play the game, what
+   moves result in what consequences, and how to win and lose. 
+   
+   Players have three shapes to choose from: Rock, paper or scissors.
+   After each player has privately selected their shape of choice, the
+   shape of both players is compared, and the winner is decided based on
+   how each shape reacts to each other.  The rules are as follows:
+
+   Rock blunts Scissors –> Rock wins
+   Scissors cuts Paper –> Scissors win
+   Paper cover Rock –> Paper wins
+   Equal shapes –> Draw (no winner)
+   
+   The game is won when one player has won a total of three moves.
+
+2. Rules
+
+   This section describes the rules on how to play the game.  Addressing
+   of how players communicate, match outcome, and match history is
+   mentioned in this section.
+
+   2.1 Registration
+
+      When players connect to the server they are given the option to
+      sign up with an account or log into their preexisting account. 
+      Players must sign in to their account if they want to play.  Once
+      successfully logging in, the player is admitted into the
+      decentralised server.
+
+      During registration of an account, players are required to input a
+      username that has not already been taken by an existing player,
+      and a password.  Passwords are allowed to be any number of
+      characters long. 
+
+   2.2 Initialising The Game
+
+      Players enter the game's lobby room once they have signed in to
+      the server.  Once a player has joined the lobby room, they can
+      communicate with other players in the lobby.  Players may request
+      to play a match with a friend by sending a request directly to
+      their friends username.  Otherwise, if a player is ready to start
+      a match, they will select 'ready' to enter the waiting room.
+      Players inside of the waiting room will be matched randomly.  Once
+      matched with an opponent, both players will be taken to a private
+      room where the game is played.
+      
+   2.3 Playing The Game
+
+      The private room is where the match is played out.  Before players
+      are admitted to the private room, a pseudorandom 8-digit number
+      will be sent to their email.  To be admitted into the private
+
+
+Morrison, et al.             Informational                      [Page 2]
+
+RFC nnnn                  Rock Paper Scissors                   May 2020
+
+
+      room, the players must enter the 8-digit number to ensure that no
+      outsiders have access to the private rooms.  Players are given 5
+      seconds to choose the throw they wish to use.  The players then 
+      get notified the outcome of the match, depending on their throw
+      and the opponents throw.  A winner is declared after winning three
+      throws against their opponent.  After the winner is declared, both
+      players see on their screen the name of the winner on their
+      screen.  Players can then decide to rematch if they like.  
+      Otherwise the players will be sent back to the lobby.
+
+   2.4 Selection
+
+      Players select their shape of choice by typing "rock", "paper", or 
+      "scissors" (without quotation marks) into the terminal and hitting
+      enter.  Alternatively, players may type "r", "p", or "s" to 
+      represent each shape my their first letter, respectively.  Input 
+      to the terminal when selecting a shape is case-insensitive. 
+
+      If an unrecognised string is inputted into the terminal, the
+      player will lose that move by default and the game will progress
+      onto the next move. 
+
+   2.5 Draws
+ 
+      In the event of a draw, both players will be required to select a 
+      shape again, and the score for each player will not update.
+
+   2.6 Move History
+
+      During play of the game, a history of wins and losses of throws is
+      printed at the end of each each move.  This is calculated by
+      incrementing each player's score for each time that they win. Each
+      player starts on a score of 0.
+
+   2.7 Before The Throw Is Revealed
+
+      The player has 5 seconds to select their throw once matched
+      against a player.  If a player selects their throw at 1 second,
+      that selection is final.  Each throw when selected, is given a
+      unique 32-bit ID that is hashed.  The only time this is decrypted
+      is when both players have selected their throws.
+
+3. Handling Dishonest Players
+
+   A players conduct is described as "dishonest" if they play in a way
+   that is considered to undercut the spirit of the game.  Examples of 
+   these acts are as follows:
+   
+      Leaving a game before a winner has been declared and failing to 
+      reconnect within 1 minute.
+
+      Failing to select a shape within the given 5 second selection 
+      period for three moves over the course of the game.  
+   
+
+Morrison, et al.             Informational                      [Page 3]
+
+RFC nnnn                  Rock Paper Scissors                   May 2020
+
+
+      Hacking the game in any way that alters the outcome of the winner
+      from what it would have otherwise been.  
+   
+   Dishonest players are subject to bans from the server.  These bans
+   are implemented based on the amount of times that the player caused 
+   an offense and the timeframe in which the player has caused those 
+   offenses.  The penalties are as follows: 
+
+      If it is the player's first offense in 30 minutes, they are given 
+      a 2 minute wait time before they are allowed to play with another 
+      player on the server.
+      
+      If it is the player's second offense in 30 minutes, they are given
+      a 10 minute wait time before they are allowed to play with another 
+      player on the server.
+   
+      If it is the player's third offense in 60 minutes, they are kicked
+      from the server for 24 hours.
+
+4. Encryption
+   
+   Encryption is implemented via a three-way handshake protocol.  
+   When the client is ready to begin communicating with the server, 
+   it will send a segment with a Synchronize Seguence Number (SYN), 
+   and then wait for a response from the server. 
+
+   The server then responds by setting the correct SYN and ACK 
+   (Acknowledgement) bits.  The ACK signifies that the SYN 
+   originally sent from the client was recieved.  The SYN sent by the 
+   server signals it is ready for a connection to be established.  
+   
+   Upon receiving the SYN + ACK segment from the server, the client 
+   will respond with a final corresponding ACK, to signal it recieved
+   the SYN + ACK from the server.
+   
+   At any point in time, a Negative Acknowledgement (NACK) may be 
+   sent by either the client or server.  This signifies that an error 
+   occurred during transmission of the previous message, or that the 
+   client or server is rejecting the previous message. 
+
+   To terminate a connection, the client will send a FIN segment, 
+   indicating it would like to end the communication.  The server can 
+   respond with a FIN and ACK segment to confirm the receipt of the 
+   FIN segment and to announce the ending of the connection on its 
+   side.  The client then responds with an ACK statment confirming the
+   receipt of the FIN+ACK segment.  
+
+5. Timestamping
+
+   Timestamping of the throws is registered, as well as the match game. 
+   The Network Time Protocol is used to synchronise the participating
+   devices in the game and to avoid communication delays.  This 
+   timestamping is saved in the server so that it connects the throw
+
+
+Morrison, et al.             Informational                      [Page 4]
+
+RFC nnnn                  Rock Paper Scissors                   May 2020
+   
+   
+   with the player and the time it was selected.  Once a player has
+   selected a throw and it is timestamped, this is stored on a server
+   to ensure that a player cannot deny the move that they chose.  
+
+6. Network Details
+   
+   The network architecture for this program is decentralised.  
+   Consequently, the nodes connected in the network are not dependent on
+   a single server point and each node holds the entire copy of the 
+   network configurations.
+
+   Nodes in our program make a portion of their network bandwidth 
+   resources directly available to other network participants, without
+   the need for central coordination by servers or stable hosts.  Peers
+   are both suppliers and consumers of resources.
+   Information about move history will be sent from the client-side to 
+   the server-side, and the server will distribute that data to the 
+   opponent's side to be stored.  
+
+7. Security Considerations
+      
+   7.1 Nonce
+      
+      An arbitrary pseudorandom number will accompany the encrypted
+      information from a player's throw, in order to keep any hacker
+      from being able to continuously throw under the name of either
+      player.  This provides further authentication and security
+      assurance during each game. 
+      
+   7.2 PuTTY Private Key Header (PPK)
+    
+      Our program uses PPK files to store the private keys that are 
+      generated by the program.  These files enable communication
+      securely with the player's opponent, assuming that they have the
+      corresponding public key.
+
+   7.3 American Encryption Standard (AES)
+
+      Our program uses the AES as a cryptographic algorithm to protect
+      our players' throws and match history.  AES works as a symmetric
+      block cipher that encrypts and decrypts our players' data.  This
+      works by converting sent data to an unintelligible form,
+      ciphertext, while decryption converts the recieved data back into
+      its original form, plaintext. 
+
+   7.4 Salting
+   
+      Our program uses salting to safeguard passwords in storage as well
+      as our players' throw.  This works by adding random data to to a 
+      one-way function that hashes the data to be salted.  Furthermore,
+      new salt is randomly generated for each password, concatenated to
+      the data, and processed with our hash function.  The resulting 
+      output (not the original password) is stored with the salt in a    
+   
+
+Morrison, et al.             Informational                      [Page 5]
+
+RFC nnnn                  Rock Paper Scissors                   May 2020
+
+      our game's server. 
+
+8. Authors' Addresses
+
+   Brodie Bosecke
+   University of Otago
+   133 Union Street East, 
+   North Dunedin
+   
+   EMail: bosbr888@student.otago.ac.nz
+
+
+   Julian Fawcett
+   University of Otago
+   133 Union Street East, 
+   North Dunedin
+   
+   EMail: fawju186@student.otago.ac.nz
+
+
+   William Wallace
+   University of Otago
+   133 Union Street East, 
+   North Dunedin
+   
+   EMail: walwi878@student.otago.ac.nz
+
+
+   Meggie Morrison
+   University of Otago
+   133 Union Street East, 
+   North Dunedin
+   
+   EMail: morme691@student.otago.ac.nz
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+   
